@@ -5,6 +5,7 @@ LDLIBS  := -lraylib -lopengl32 -lgdi32 -lwinmm
 SRC := main.c chip8.c
 OBJ := $(SRC:.c=.o)
 BIN := chip8.exe
+ROM ?= ../roms/3-corax+.ch8
 
 all: $(BIN)
 
@@ -16,6 +17,7 @@ $(BIN): $(OBJ)
 
 run: $(BIN)
 	./$(BIN)
+	./$(BIN) $(ROM)
 
 clean:
 	rm -f $(OBJ) $(BIN)

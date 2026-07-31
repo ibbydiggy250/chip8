@@ -1,10 +1,24 @@
 #include "raylib.h"
 #include "chip8.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define SCALE 12
 #define CYCLES_PER_FRAME 10
+
+// CHIP-8 keypad -> keyboard, indexed by CHIP-8 key value.
+//   1 2 3 C     1 2 3 4
+//   4 5 6 D  -> Q W E R
+//   7 8 9 E     A S D F
+//   A 0 B F     Z X C V
+static const int keymap[16] = {
+    KEY_X,    KEY_ONE, KEY_TWO, KEY_THREE, // 0 1 2 3
+    KEY_Q,    KEY_W,   KEY_E,   KEY_A,     // 4 5 6 7
+    KEY_S,    KEY_D,   KEY_Z,   KEY_C,     // 8 9 A B
+    KEY_FOUR, KEY_R,   KEY_F,   KEY_V,     // C D E F
+};
 
 // Exercises 00E0, 6XNN, 7XNN, ANNN, DXYN, 1NNN: draws the font '0' sprite,
 // then loops drawing it again 8px to the right each pass, wrapping forever.
@@ -35,7 +49,12 @@ int main(int argc, char *argv[])
     InitWindow(CHIP8_DISPLAY_W * SCALE, CHIP8_DISPLAY_H * SCALE, "CHIP-8");
     SetTargetFPS(60);
 
+    srand(time(NULL));
+
     while (!WindowShouldClose()) {
+        for (int i = 0; i < 16; i++)
+            chip.keys[i] = IsKeyDown(keymap[i]);
+
         for (int i = 0; i < CYCLES_PER_FRAME; i++)
             chip8_cycle(&chip);
 
