@@ -1,6 +1,7 @@
 #include "chip8.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 static const uint8_t fontset[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -61,6 +62,8 @@ void chip8_cycle(Chip8 *c)
             break;
 
         case 0xEE: /* 00EE - RET */
+            c->sp--;
+            c->pc = c->stack[c->sp];
             break;
 
         default:
@@ -74,6 +77,9 @@ void chip8_cycle(Chip8 *c)
         break;
 
     case 0x2000: /* 2NNN - CALL nnn */
+        c->stack[c->sp] = c->pc;
+        c->sp++;
+        c->pc = nnn;
         break;
 
     case 0x3000: /* 3XNN - SE Vx, nn */
@@ -102,7 +108,7 @@ void chip8_cycle(Chip8 *c)
         break;
 
     case 0x8000: {
-        switch (opcode & 0xF) {
+        switch (n) {
         case 0x0: /* 8XY0 - LD Vx, Vy */
             c->V[x] = c->V[y];
             break;
@@ -218,6 +224,17 @@ void chip8_cycle(Chip8 *c)
             break;
 
         case 0x0A: /* FX0A - LD Vx, K */
+            int z = 0;
+            for(int i=0;i<16;i++){
+                if((c->keys[i])){
+                    c->V[x] = i;
+                    z = 1;
+                    break;
+                }
+            }
+            if(z = 0){
+                c->pc -=2;
+            }
             break;
 
         case 0x15: /* FX15 - LD DT, Vx */
@@ -233,12 +250,24 @@ void chip8_cycle(Chip8 *c)
             break;
 
         case 0x33: /* FX33 - LD B, Vx */
+            uint8_t dec = c->V[x];
+            c->mem[c->I+2] = dec%10;
+            dec/=10;
+            c->mem[c->I+1] = (dec%10);
+            dec/=10;
+            c->mem[c->I] = dec%10;
             break;
 
         case 0x55: /* FX55 - LD [I], Vx */
+            for(int i=0;i<=x;i++){
+                c->mem[c->I+i] = c->V[i];
+            }
             break;
 
         case 0x65: /* FX65 - LD Vx, [I] */
+            for(int i=0;i<=x;i++){
+                c->V[i] = c->mem[c->I+i];
+            }
             break;
 
         default:
