@@ -53,25 +53,124 @@ void chip8_cycle(Chip8 *c)
     uint16_t nnn = opcode & 0xFFF;
 
     switch (opcode & 0xF000) {
-    case 0x0000:
-        if (opcode == 0x00E0)
-            memset(c->display, 0, sizeof(c->display));
-        break;
 
-    case 0x1000:
+    case 0x0000: {
+        switch (nn) {
+        case 0xE0: /* 00E0 - CLS */
+            memset(c->display, 0, sizeof(c->display));
+            break;
+
+        case 0xEE: /* 00EE - RET */
+            break;
+
+        default:
+            goto unimplemented;
+        }
+        break;
+    }
+
+    case 0x1000: /* 1NNN - JP nnn */
         c->pc = nnn;
         break;
 
-    case 0x6000:
+    case 0x2000: /* 2NNN - CALL nnn */
+        break;
+
+    case 0x3000: /* 3XNN - SE Vx, nn */
+        break;
+
+    case 0x4000: /* 4XNN - SNE Vx, nn */
+        break;
+
+    case 0x5000: {
+        switch (n) {
+        case 0x0: /* 5XY0 - SE Vx, Vy */
+            break;
+
+        default:
+            goto unimplemented;
+        }
+        break;
+    }
+
+    case 0x6000: /* 6XNN - LD Vx, nn */
         c->V[x] = nn;
         break;
 
-    case 0x7000:
+    case 0x7000: /* 7XNN - ADD Vx, nn */
         c->V[x] += nn;
         break;
 
-    case 0xA000:
+    case 0x8000: {
+        switch (opcode & 0xF) {
+        case 0x0: /* 8XY0 - LD Vx, Vy */
+            c->V[x] = c->V[y];
+            break;
+        case 0x1: /* 8XY1 - OR Vx, Vy */
+            c->V[x] = c->V[x] | c->V[y];
+            break;
+        case 0x2: /* 8XY2 - AND Vx, Vy */
+            c->V[x] = c->V[x] & c->V[y];
+            break;
+        case 0x3: /* 8XY3 - XOR Vx, Vy */
+            c->V[x] = c->V[x] ^ c->V[y];
+            break;
+
+        case 0x4: /* 8XY4 - ADD Vx, Vy */
+            uint8_t carry = (c->V[x]+c->V[y]) > 0xFF;
+            c->V[x] = c->V[x] + c->V[y];
+            c->V[0xF] = carry;
+            break;
+
+        case 0x5: /* 8XY5 - SUB Vx, Vy */
+            uint8_t nb = (c->V[x] >= c->V[y]);
+            c->V[x] = c->V[x] - c->V[y];
+            c->V[0xF] = nb;
+            break;
+
+        case 0x6: /* 8XY6 - SHR Vx */
+            uint8_t lsb = (c->V[x] & 0x01);
+            c->V[x] >>= 1;
+            c->V[0xF] = lsb;
+            break;
+
+        case 0x7: /* 8XY7 - SUBN Vx, Vy */
+            uint8_t nb = (c->V[y] >= c->V[x]);
+            c->V[x] = c->V[y] - c->V[x];
+            c->V[0xF] = nb;
+            break;
+
+        case 0xE: /* 8XYE - SHL Vx */
+            uint8_t msb = (c->V[x] & 0x80)>>7;
+            c->V[x] <<= 1;
+            c->V[0xF] = msb;
+            break;
+
+        default:
+            goto unimplemented;
+        }
+        break;
+    }
+
+    case 0x9000: {
+        switch (n) {
+        case 0x0: /* 9XY0 - SNE Vx, Vy */
+            break;
+
+        default:
+            goto unimplemented;
+        }
+        break;
+    }
+
+    case 0xA000: /* ANNN - LD I, nnn */
         c->I = nnn;
+        break;
+
+    case 0xB000: /* BNNN - JP V0, nnn */
+        break;
+
+    case 0xC000: /* CXNN - RND Vx, nn */
         break;
 
     case 0xD000: {
@@ -99,7 +198,57 @@ void chip8_cycle(Chip8 *c)
         break;
     }
 
+    case 0xE000: {
+        switch (nn) {
+        case 0x9E: /* EX9E - SKP Vx */
+            break;
+
+        case 0xA1: /* EXA1 - SKNP Vx */
+            break;
+
+        default:
+            goto unimplemented;
+        }
+        break;
+    }
+
+    case 0xF000: {
+        switch (nn) {
+        case 0x07: /* FX07 - LD Vx, DT */
+            break;
+
+        case 0x0A: /* FX0A - LD Vx, K */
+            break;
+
+        case 0x15: /* FX15 - LD DT, Vx */
+            break;
+
+        case 0x18: /* FX18 - LD ST, Vx */
+            break;
+
+        case 0x1E: /* FX1E - ADD I, Vx */
+            break;
+
+        case 0x29: /* FX29 - LD F, Vx */
+            break;
+
+        case 0x33: /* FX33 - LD B, Vx */
+            break;
+
+        case 0x55: /* FX55 - LD [I], Vx */
+            break;
+
+        case 0x65: /* FX65 - LD Vx, [I] */
+            break;
+
+        default:
+            goto unimplemented;
+        }
+        break;
+    }
+
     default:
+    unimplemented:
         fprintf(stderr, "unimplemented opcode 0x%04X at 0x%03X\n", opcode, c->pc - 2);
         break;
     }
