@@ -8,15 +8,15 @@ implementing a fetch–decode–execute loop, which is the same shape as a real 
 emulator, just small enough to fit in one file.
 
 ```
-┌────────────────────────────────────────┐
-│                                        │
-│    ████  ██  ██  ██  ████     64×32    │
-│   ██     ██  ██  ██  ██       pixels   │
-│   ██     ██████  ██  ████     @ 12x    │
-│   ██     ██  ██  ██  ██       scale    │
-│    ████  ██  ██  ██  ████              │
-│                                        │
-└────────────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│                                          │
+│  ████ █  █ ███ ███      ████   64×32     │
+│  █    █  █  █  █  █     █  █   pixels    │
+│  █    ████  █  ███  ███ ████   @ 12x     │
+│  █    █  █  █  █        █  █   scale     │
+│  ████ █  █ ███ █        ████             │
+│                                          │
+└──────────────────────────────────────────┘
 ```
 
 ---
@@ -200,9 +200,26 @@ CHIP-8 machines had a 16-key hex keypad. It maps onto the left of a QWERTY keybo
 The mapping lives in `keymap[16]` in [dev/main.c](dev/main.c), indexed by CHIP-8 key
 value — `keymap[0]` is `X`, `keymap[1]` is `1`, and so on.
 
-Games pick their own keys out of those 16. The usual bindings are `1`/`Q` and
-`4`/`R` for Pong's two paddles, and `W`/`Q`/`E`/`A` to rotate, move, and drop in
-Tetris — if a game feels unresponsive, it's worth trying the other keys in the grid.
+Each game picks its own keys out of those 16, so the controls differ per ROM. For
+the two games included here:
+
+**Pong** — left paddle on `1`/`Q`, right paddle on `4`/`R`.
+
+| Key   | CHIP-8 key | Action            |
+| :---- | :--------- | :---------------- |
+| `1`   | `1`        | left paddle up    |
+| `Q`   | `4`        | left paddle down  |
+| `4`   | `C`        | right paddle up   |
+| `R`   | `D`        | right paddle down |
+
+**Tetris** — all four controls sit on the `Q` `W` `E` / `A` cluster.
+
+| Key   | CHIP-8 key | Action    |
+| :---- | :--------- | :-------- |
+| `Q`   | `4`        | rotate    |
+| `W`   | `5`        | move left |
+| `E`   | `6`        | move right|
+| `A`   | `7`        | drop      |
 
 ---
 
