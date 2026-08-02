@@ -264,8 +264,6 @@ mingw32-make run ROM=../roms/pong.ch8
 mingw32-make run ROM=../roms/tetris.ch8
 ```
 
-Note that `make run` launches the built-in demo first and the ROM second — close the
-demo window to get to the ROM.
 
 Close the window or press `ESC` to quit.
 
